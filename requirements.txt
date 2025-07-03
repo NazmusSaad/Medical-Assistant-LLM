@@ -1,0 +1,7 @@
+transformers
+torch
+peft
+streamlit
+bitsandbytes
+accelerate
+python-dotenv
