@@ -1,7 +1,17 @@
-transformers
-torch
-peft
-streamlit
-bitsandbytes
-accelerate
-python-dotenv
+# LLM & Quantization
+transformers>=4.38.0
+torch>=2.0.0
+peft>=0.8.0
+bitsandbytes>=0.41.0
+
+# RAG Tools
+duckduckgo_search>=1.0.0
+beautifulsoup4>=4.12.2
+chromadb>=0.4.15
+tqdm
+
+# UI
+streamlit>=1.25.0
+
+# Utilities
+python-dotenv>=1.0.0

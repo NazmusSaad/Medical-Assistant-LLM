@@ -1,64 +1,35 @@
-import os, torch, streamlit as st
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from peft import PeftModel
+import streamlit as st
 from dotenv import load_dotenv
+import os
+from dynamic_rag_module import load_model, dynamic_rag_pipeline, generate_clean_with_rag
+
+# Load HF token from .env
 load_dotenv()
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-HF_REPO = "Nazmoose/MedLlama-LoRA"
-BASE_REPO = "NousResearch/Llama-2-7b-hf"
-
+# Load model + tokenizer once
 @st.cache_resource
-def load_model():
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-    )
-    tokenizer = AutoTokenizer.from_pretrained(HF_REPO, token=os.getenv("HF_TOKEN"))
-    base_model = AutoModelForCausalLM.from_pretrained(
-        BASE_REPO,
-        quantization_config=bnb_config,
-        device_map="auto",
-        token=os.getenv("HF_TOKEN"),
-    )
-    model = PeftModel.from_pretrained(base_model, HF_REPO, token=os.getenv("HF_TOKEN"))
-    model.eval()
-    return tokenizer, model
+def get_model():
+    return load_model()  # You should return tokenizer, model
 
-tokenizer, model = load_model()
+tokenizer, model = get_model()
 
-SYSTEM_PROMPT = (
-    "You are MedLLaMA, a model fine-tuned for clinical Q&A. "
-    "Respond with medically relevant answers but do not provide professional advice."
-)
+st.title("🩺 MedLLaMA with Dynamic RAG")
+st.markdown("Ask medical questions — powered by a fine-tuned LLaMA2 and real-time web retrieval.")
 
-st.set_page_config(page_title="MedLLaMA", page_icon="🩺")
-st.title("🩺 MedLLaMA – Clinical Q&A Assistant")
-st.markdown("> ⚠️ This app is for educational/demo purposes only.")
+user_question = st.text_input("💬 Your question", "")
 
-if "history" not in st.session_state:
-    st.session_state.history = []
+if user_question:
+    with st.spinner("🔎 Searching and answering..."):
+        # Step 1: RAG search
+        context_chunks = dynamic_rag_pipeline(user_question)  # Returns top-k retrieved texts
 
-for role, msg in st.session_state.history:
-    with st.chat_message(role):
-        st.markdown(msg)
+        # Step 2: Combine prompt + context + generate response
+        full_answer = generate_clean_with_rag(user_question, context_chunks, tokenizer, model)
 
-user_msg = st.chat_input("Ask a medical question...")
-if user_msg:
-    st.chat_message("user").markdown(user_msg)
-    st.session_state.history.append(("user", user_msg))
+    st.markdown("### 🧠 Answer")
+    st.success(full_answer)
 
-    prompt = f"<s>[INST] <<SYS>>\n{SYSTEM_PROMPT}\n<</SYS>>\n\n{user_msg} [/INST]"
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    output = model.generate(
-        **inputs,
-        max_new_tokens=512,
-        temperature=0.7,
-        top_p=0.9,
-        pad_token_id=tokenizer.eos_token_id,
-        eos_token_id=tokenizer.eos_token_id,
-    )
-    answer = tokenizer.decode(output[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
-    st.chat_message("assistant").markdown(answer)
-    st.session_state.history.append(("assistant", answer))
+    st.markdown("### 📚 Retrieved Context")
+    for i, chunk in enumerate(context_chunks):
+        st.markdown(f"**[{i+1}]** {chunk}")
