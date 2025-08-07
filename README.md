@@ -24,6 +24,18 @@ In addition to fine-tuning, MedLLaMA now supports **Dynamic RAG**, combining web
 
 ---
 
+## 🧠 Tech Stack
+
+- 🦙 Hugging Face Transformers + QLoRA (4-bit)
+- 🔎 LangChain (Dynamic RAG pipeline)
+- 🧠 ChromaDB (vector store for chunked web context)
+- 🌐 DuckDuckGo Search + BeautifulSoup (real-time web scraping)
+- 🎛️ Streamlit (UI demo)
+- 🔐 dotenv (secure environment variable handling)
+
+
+---
+
 ## 🚀 Try It Locally
 
 1. Clone the repo and install dependencies:
