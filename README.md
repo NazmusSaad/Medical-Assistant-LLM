@@ -14,6 +14,16 @@ MedLLaMA is a fine-tuned version of LLaMA-2 designed for clinical instruction fo
 
 ---
 
+## 🔍 Dynamic Retrieval-Augmented Generation (RAG)
+
+In addition to fine-tuning, MedLLaMA now supports **Dynamic RAG**, combining web search with medical domain reasoning:
+
+- 🔎 Uses DuckDuckGo + BeautifulSoup to fetch real-time content
+- 📄 Chunks and embeds retrieved web pages using `MiniLM`
+- 🧠 Generates responses using your fine-tuned MedLLaMA model
+
+---
+
 ## 🚀 Try It Locally
 
 1. Clone the repo and install dependencies:
@@ -31,17 +41,8 @@ MedLLaMA is a fine-tuned version of LLaMA-2 designed for clinical instruction fo
    streamlit run streamlit_app.py
    ```
 
----
 
-## 🔍 Dynamic Retrieval-Augmented Generation (RAG)
-
-In addition to fine-tuning, MedLLaMA now supports **Dynamic RAG**, combining web search with medical domain reasoning:
-
-- 🔎 Uses DuckDuckGo + BeautifulSoup to fetch real-time content
-- 📄 Chunks and embeds retrieved web pages using `MiniLM`
-- 🧠 Generates responses using your fine-tuned MedLLaMA model
-
-### Example
+## Example
 
 ```
 Q: Is creatine monohydrate dangerous?
